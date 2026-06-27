@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
+from pydantic.mypy import from_attributes_callback
 
 
 class TaskCreate(BaseModel):
@@ -7,6 +8,7 @@ class TaskCreate(BaseModel):
 
 
 class TaskRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     title: str
     description: str | None = None
