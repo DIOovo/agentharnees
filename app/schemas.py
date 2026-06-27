@@ -1,5 +1,5 @@
 from pydantic import BaseModel,ConfigDict
-from pydantic.mypy import from_attributes_callback
+
 
 
 class TaskCreate(BaseModel):
