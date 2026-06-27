@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.routers import tasks
 from app.database import Base,engine
-
+from app.routers import runs
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -17,3 +17,4 @@ def root():
 
 
 app.include_router(tasks.router)
+app.include_router(runs.router)

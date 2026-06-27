@@ -35,7 +35,7 @@ class Run(Base):
 class RunLog(Base):
     __tablename__ = 'run_logs'
     id:Mapped[int] = mapped_column(primary_key=True,index=True)
-    task_id:Mapped[int] = mapped_column(ForeignKey("tasks.id"),nullable=False)
+    run_id:Mapped[int] = mapped_column(ForeignKey("tasks.id"),nullable=False)
     level: Mapped[str] = mapped_column(String(20), default="info")
     message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
