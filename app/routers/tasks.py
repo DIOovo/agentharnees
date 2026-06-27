@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Task
 from app.schemas import TaskCreate, TaskRead
-
+from app.schemas import RunRead, TaskCreate, TaskRead
+from app.services.runner_service import run_task
 router = APIRouter(
     prefix="/tasks",
     tags=["tasks"],
@@ -35,3 +36,20 @@ def read_task(task_id: int,db:Session = Depends(get_db)):
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
     return task
+
+@router.post("/{task_id}/runs", response_model=RunRead)
+def start_task_run(
+    task_id: int,
+    db: Session = Depends(get_db),
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if task is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Task not found",
+        )
+
+    run = run_task(db, task)
+
+    return run
