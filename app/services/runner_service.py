@@ -4,6 +4,11 @@ from sqlalchemy.orm import Session
 from tenacity import retry
 
 from app.models import Run, RunLog, Task
+from datetime import datetime
+from sqlalchemy.orm import Session
+from app.services.llm_client import llm_client
+from app.services.prompt_service import build_task_user_prompt,build_task_system_prompt
+
 
 def add_log(
         db:Session,
@@ -35,35 +40,30 @@ def run_task(
     db.refresh(run)
 
     try:
-        add_log(
-        db,
-        run.id,
-        "开始执行任务")
-        add_log(
-            db,
-            run.id,
-            f"任务标题{task.title}"
-        )
+        add_log(db,run.id,"开始执行任务")
+        add_log(db,run.id,f"任务标题{task.title}")
         if task.description:
-            add_log(
-                db,
-                run.id,
-                f"任务表述{task.description}"
-            )
-        add_log(db, run.id, "模拟 Agent 分析任务")
-        add_log(db, run.id, "模拟 Agent 生成结果")
+            add_log(db,run.id,f"任务表述{task.description}")
+
+        system_prompt = build_task_system_prompt()
+        user_prompt = build_task_user_prompt(task)
+
+        add_log(db, run.id, "已构建 system prompt")
+        add_log(db, run.id, "已构建 user prompt")
+        add_log(db, run.id, "开始调用 LLM")
+        result = llm_client.chat(
+            system_prompt = system_prompt,
+            user_prompt = user_prompt,
+        )
+        add_log(db, run.id, "LLM 调用完成")
+
         run.status = "success"
-        run.result = f"任务 `{task.title}` 已由 Fake Agent 执行完成。"
+        run.result = result
         run.finished_at = datetime.now()
         task.status = "success"
         db.commit()
         db.refresh(run)
-        add_log(
-            db,
-            run.id,
-            "任务执行成功"
-        )
-
+        add_log(db,run.id,"任务执行成功")
         return run
     except Exception as exc:
         run.status = "failed"
