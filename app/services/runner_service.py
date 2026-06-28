@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from app.services.llm_client import llm_client
 from app.services.prompt_service import build_task_user_prompt,build_task_system_prompt
-
+from app.core.config import settings
 
 def add_log(
         db:Session,
@@ -26,7 +26,7 @@ def add_log(
     db.refresh(log)
     return log
 
-def run_task(
+def create_run(
         db:Session,
         task:Task
 )-> Run:
@@ -38,41 +38,90 @@ def run_task(
     task.status = "running"
     db.commit()
     db.refresh(run)
+    return run
 
+def finish_run_success(
+        db:Session,
+        task:Task,
+        run:Run,
+        result:str,
+) -> Run:
+    run.status = "success"
+    run.result = result
+    run.finished_at = datetime.now()
+    task.status = "success"
+    db.commit()
+    db.refresh(run)
+    add_log(db, run.id, "任务执行成功")
+    return run
+
+def finish_run_failure(
+        db:Session,
+        task:Task,
+        run:Run,
+        error_message:str,
+) -> Run:
+    run.status = "failed"
+    run.error_message = error_message
+    run.finished_at = datetime.now()
+    task.status = "failed"
+    db.commit()
+    db.refresh(run)
+
+    add_log(db, run.id, f"任务执行失败：{error_message}", level="error")
+
+    return run
+
+def run_task_with_llm(
+        db:Session,
+        task:Task,
+        run:Run,
+) -> Run:
+    add_log(db,run.id,"开始执行任务")
+    add_log(db,run.id,f"任务标题{task.title}")
+    if task.description:
+        add_log(db,run.id,f"任务表述{task.description}")
+
+    system_prompt = build_task_system_prompt()
+    user_prompt = build_task_user_prompt(task)
+
+    add_log(db, run.id, "已构建 system prompt")
+    add_log(db, run.id, "已构建 user prompt")
+    add_log(db, run.id, "开始调用 LLM")
+    result = llm_client.chat(
+        system_prompt = system_prompt,
+        user_prompt = user_prompt,
+    )
+    add_log(db, run.id, "LLM 调用完成")
+
+def run_task_with_fake(
+        db:Session,
+        task:Task,
+        run:Run,
+) -> Run:
+    add_log(db, run.id, "使用 Fake Runner 执行任务")
+    add_log(db, run.id, f"任务标题：{task.title}")
+
+    result = f"任务 `{task.title}` 已由 Fake Runner 执行完成。"
+
+    run = finish_run_success(
+        db = db,
+        task = task,
+        run = run,
+    result = result,)
+    add_log(db,run.id,"Fake Runner 执行成功")
+
+def run_task(
+        db:Session,
+        task:Task,
+) -> Run:
+    run = create_run(db,task)
     try:
-        add_log(db,run.id,"开始执行任务")
-        add_log(db,run.id,f"任务标题{task.title}")
-        if task.description:
-            add_log(db,run.id,f"任务表述{task.description}")
-
-        system_prompt = build_task_system_prompt()
-        user_prompt = build_task_user_prompt(task)
-
-        add_log(db, run.id, "已构建 system prompt")
-        add_log(db, run.id, "已构建 user prompt")
-        add_log(db, run.id, "开始调用 LLM")
-        result = llm_client.chat(
-            system_prompt = system_prompt,
-            user_prompt = user_prompt,
-        )
-        add_log(db, run.id, "LLM 调用完成")
-
-        run.status = "success"
-        run.result = result
-        run.finished_at = datetime.now()
-        task.status = "success"
-        db.commit()
-        db.refresh(run)
-        add_log(db,run.id,"任务执行成功")
-        return run
-    except Exception as exc:
-        run.status = "failed"
-        run.error_message = str(exc)
-        run.finished_at = datetime.now()
-        task.status = "failed"
-        db.commit()
-        db.refresh(run)
-
-        add_log(db, run.id, f"任务执行失败：{exc}", level="error")
-
+        if settings.RUNNER_MODE == "llm":
+            run_task_with_llm(db,task,run)
+        return run_task_with_fake(db,task,run)
+    except Exception as e:
+        finish_run_failure(
+            db = db,run = run,error_message = str(e))
+        add_log(db,f"任务执行失败：{e}", level="error")
         return run
