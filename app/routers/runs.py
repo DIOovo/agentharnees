@@ -22,7 +22,7 @@ def get_run(run_id:int,
         raise HTTPException(status_code=404, detail="Run not found")
     return run
 
-@router.get("/{run_id}/logs", response_model=RunLogRead)
+@router.get("/{run_id}/logs", response_model=list[RunLogRead])
 def get_run_log(run_id:int,
                 db: Session = Depends(get_db)):
     run = db.query(Run).filter(Run.id == run_id).first()
