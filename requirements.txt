@@ -8,6 +8,7 @@ annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
 appnope @ file:///home/conda/feedstock_root/build_artifacts/appnope_1733332318622/work
+ast_serialize==0.5.0
 asttokens @ file:///home/conda/feedstock_root/build_artifacts/asttokens_1763409923949/work
 async-timeout==5.0.1
 attrs==26.1.0
@@ -65,6 +66,7 @@ langgraph-checkpoint==4.0.1
 langgraph-prebuilt==1.0.9
 langgraph-sdk==0.3.13
 langsmith==0.7.30
+librt==0.11.0
 lightgbm==4.6.0
 Markdown==3.10.2
 markdown-it-py==4.0.0
@@ -76,6 +78,8 @@ mpmath @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_17i
 msoffcrypto-tool==6.0.0
 multidict==6.7.1
 multiprocess==0.70.19
+mypy==2.1.0
+mypy_extensions==1.1.0
 nest_asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1733325553580/work
 networkx @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_e6lt1dcyid/croot/networkx_1737040482044/work
 nltk==3.9.3
@@ -89,6 +93,7 @@ packaging @ file:///opt/miniconda3/conda-bld/packaging_1761049079158/work
 pandas==2.3.3
 pandas-stubs==2.3.3.260113
 parso @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_parso_1770676243/work
+pathspec==1.1.1
 pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1733301927746/work
 pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1733327343728/work
 pillow @ file:///Users/ec2-user/croot/pillow_1769433324814/work
@@ -142,6 +147,7 @@ tensorboard-data-server==0.7.2
 threadpoolctl==3.6.0
 tiktoken==0.12.0
 tokenizers==0.22.2
+tomli==2.4.1
 torch==2.5.1
 torchaudio==2.5.1
 torchvision==0.20.1
