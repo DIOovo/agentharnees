@@ -77,6 +77,8 @@ def run_task_with_llm(
         task:Task,
         run:Run,
 ) -> Run:
+    add_log(db, run.id, f"LLM_BASE_URL：{settings.llm_base_url}")
+    add_log(db, run.id, f"LLM_MODEL：{settings.llm_model}")
     add_log(db,run.id,"开始执行任务")
     add_log(db,run.id,f"任务标题{task.title}")
     if task.description:
