@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Run, RunLog
 from app.schemas import RunLogRead, RunRead
-
+from app.models import Run, RunLog, RunStep
+from app.schemas import RunLogRead, RunRead, RunStepRead
 router = APIRouter(
     prefix="/runs",
     tags=["runs"],
@@ -32,5 +33,17 @@ def get_run_log(run_id:int,
         db.query(RunLog)
         .filter(RunLog.run_id == run_id)
         .order_by(RunLog.id.asc())
+        .all()
+    )
+
+@router.get("/{run_id}/steps", response_model=list[RunStepRead])
+def get_run_steps(run_id:int,db: Session = Depends(get_db)):
+    run = db.query(Run).filter(Run.id == run_id).first()
+    if run is None:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return (
+        db.query(RunStep)
+        .filter(RunStep.run_id == run_id)
+        .order_by(RunStep.id.asc())
         .all()
     )

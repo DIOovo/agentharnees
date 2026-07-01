@@ -4,7 +4,7 @@ from app.database import Base
 from datetime import datetime
 from sqlalchemy import DateTime,ForeignKey,Integer,String,Text
 from sqlalchemy.orm import Mapped,mapped_column,relationship
-
+from sqlalchemy import JSON
 
 class Task(Base):
     __tablename__ = 'tasks'
@@ -31,6 +31,10 @@ class Run(Base):
         back_populates="run",
         cascade="all,delete-orphan",
     )
+    steps: Mapped[list["RunStep"]] = relationship(
+        back_populates="run",
+        cascade="all, delete-orphan",
+    )
 
 class RunLog(Base):
     __tablename__ = 'run_logs'
@@ -40,3 +44,20 @@ class RunLog(Base):
     message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     run: Mapped["Run"] = relationship(back_populates="logs")
+
+
+class RunStep(Base):
+    __tablename__ = 'run_steps'
+    id:Mapped[int] = mapped_column(primary_key=True,index=True)
+    run_id:Mapped[int] = mapped_column(ForeignKey("runs.id"),nullable=False)
+    step_index:Mapped[int] = mapped_column(Integer,nullable=False)
+    model_output: Mapped[str | None] = mapped_column(Text, nullable=True)
+    step_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    tool_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    tool_args: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    tool_result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    status: Mapped[str] = mapped_column(String(50), default="success")
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    run: Mapped["Run"] = relationship(back_populates="steps")
