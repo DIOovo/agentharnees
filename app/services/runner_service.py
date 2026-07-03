@@ -1,14 +1,12 @@
 from datetime import datetime
 
 from sqlalchemy.orm import Session
-from tenacity import retry
 
 from app.models import Run, RunLog, Task
-from datetime import datetime
-from sqlalchemy.orm import Session
-from app.services.llm_client import llm_client
-from app.services.prompt_service import build_task_user_prompt,build_task_system_prompt
 from app.core.config import settings
+from app.services.agent_loop_service import run_tool_agent
+from app.services.llm_client import llm_client
+from app.services.prompt_service import build_task_system_prompt, build_task_user_prompt
 
 def add_log(
         db:Session,
@@ -95,6 +93,14 @@ def run_task_with_llm(
         user_prompt = user_prompt,
     )
     add_log(db, run.id, "LLM 调用完成")
+    run = finish_run_success(
+        db=db,
+        task=task,
+        run=run,
+        result=result,
+    )
+    add_log(db, run.id, "LLM Runner 执行成功")
+    return run
 
 def run_task_with_fake(
         db:Session,
@@ -112,6 +118,8 @@ def run_task_with_fake(
         run = run,
     result = result,)
     add_log(db,run.id,"Fake Runner 执行成功")
+    return run
+
 
 def run_task(
         db:Session,
@@ -119,11 +127,37 @@ def run_task(
 ) -> Run:
     run = create_run(db,task)
     try:
-        if settings.RUNNER_MODE == "llm":
-            run_task_with_llm(db,task,run)
+        if settings.runner_mode == "llm":
+            return run_task_with_llm(db,task,run)
+        if settings.runner_mode == "tool_agent":
+            return run_task_with_tool_agent(db,task,run)
         return run_task_with_fake(db,task,run)
-    except Exception as e:
-        finish_run_failure(
-            db = db,run = run,error_message = str(e))
-        add_log(db,f"任务执行失败：{e}", level="error")
+    except Exception as exc:
+        run = finish_run_failure(
+            db=db,
+            task=task,
+            run=run,
+            error_message=str(exc),
+        )
         return run
+
+def run_task_with_tool_agent(
+        db:Session,
+        task:Task,
+        run:Run,
+) -> Run:
+    add_log(db, run.id, "使用 Tool Agent Runner 执行任务")
+    add_log(db, run.id, f"任务标题：{task.title}")
+    result = run_tool_agent(
+        db = db,
+        task = task,
+        run = run,
+    )
+    run = finish_run_success(
+        db = db,
+        task = task,
+        run = run,
+        result = result,
+    )
+    add_log(db,run.id,"Tool Agent Runner 执行完成")
+    return run
