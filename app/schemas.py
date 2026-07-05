@@ -48,3 +48,34 @@ class RunLogRead(BaseModel):
     level: str
     message: str
     created_at: datetime
+
+class EvalRunRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    runner_mode: str
+    total_cases: int
+    passed_cases: int
+    failed_cases: int
+    success_rate: float
+    status: str
+    created_at: datetime
+    finished_at: datetime | None = None
+
+
+class EvalResultRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    eval_run_id: int
+    task_id: int | None = None
+    run_id: int | None = None
+    case_name: str
+    title: str
+    passed: bool
+    validator_type: str
+    expected: str | None = None
+    actual: str | None = None
+    error_message: str | None = None
+    created_at: datetime

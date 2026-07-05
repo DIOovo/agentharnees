@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import DateTime,ForeignKey,Integer,String,Text
 from sqlalchemy.orm import Mapped,mapped_column,relationship
 from sqlalchemy import JSON
+from sqlalchemy import Float
 
 class Task(Base):
     __tablename__ = 'tasks'
@@ -61,3 +62,43 @@ class RunStep(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     run: Mapped["Run"] = relationship(back_populates="steps")
+
+class EvalRun(Base):
+    __tablename__ = "eval_runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    runner_mode: Mapped[str] = mapped_column(String(50), nullable=False)
+    total_cases: Mapped[int] = mapped_column(Integer, default=0)
+    passed_cases: Mapped[int] = mapped_column(Integer, default=0)
+    failed_cases: Mapped[int] = mapped_column(Integer, default=0)
+    success_rate: Mapped[float] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String(50), default="running")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    results: Mapped[list["EvalResult"]] = relationship(
+        back_populates="eval_run",
+        cascade="all, delete-orphan",
+    )
+
+
+class EvalResult(Base):
+    __tablename__ = "eval_results"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    eval_run_id: Mapped[int] = mapped_column(ForeignKey("eval_runs.id"), nullable=False)
+    task_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id"), nullable=True)
+    run_id: Mapped[int | None] = mapped_column(ForeignKey("runs.id"), nullable=True)
+
+    case_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    passed: Mapped[bool] = mapped_column(default=False)
+    validator_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    expected: Mapped[str | None] = mapped_column(Text, nullable=True)
+    actual: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    eval_run: Mapped["EvalRun"] = relationship(back_populates="results")
