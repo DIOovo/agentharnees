@@ -4,4 +4,4 @@ def test_add():
     assert add(1,2) == 3
 
 def test_device():
-    assert divide(2,3) == 3
+    assert divide(3,3) == 1

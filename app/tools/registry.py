@@ -1,6 +1,6 @@
 from app.tools.base import Tool
 from app.tools.file_tools import get_project_tree,list_files,read_file
-
+from app.tools.shell_tools import run_pytest, run_shell_command
 TOOLS: dict[str,Tool] = {
     "list_files":Tool(
         name="list_files",
@@ -16,7 +16,18 @@ TOOLS: dict[str,Tool] = {
         name="get_project_tree",
         func=get_project_tree,
         description="查看项目目录树"
+    ),
+    "run_shell_command": Tool(
+        name="run_shell_command",
+        description="在 Docker 沙箱中执行只读 shell 命令",
+        func=run_shell_command,
+    ),
+    "run_pytest": Tool(
+        name="run_pytest",
+        description="在 Docker 沙箱中运行 pytest 测试",
+        func=run_pytest,
     )
+
 }
 
 def get_tool(name:str) -> Tool|None:
@@ -36,6 +47,5 @@ def run_tool(name:str,args:dict):
             "success": False,
             "error": str(e),
         }
-
 
 
