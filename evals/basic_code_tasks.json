@@ -1,0 +1,29 @@
+[
+  {
+    "name": "project_tree_check",
+    "title": "查看 sample_project 项目结构",
+    "description": "请查看 sample_project 的项目结构，并说明里面有哪些主要文件。",
+    "validator": {
+      "type": "tool_called",
+      "tool_name": "get_project_tree"
+    }
+  },
+  {
+    "name": "read_calculator_file",
+    "title": "读取 calculator.py",
+    "description": "请读取 sample_project/calculator.py，并说明 add 和 divide 函数的作用。",
+    "validator": {
+      "type": "tool_called",
+      "tool_name": "read_file"
+    }
+  },
+  {
+    "name": "run_pytest_check",
+    "title": "运行 sample_project 测试",
+    "description": "请运行 sample_project 的 pytest，并判断测试是否通过。",
+    "validator": {
+      "type": "tool_success",
+      "tool_name": "run_pytest"
+    }
+  }
+]
