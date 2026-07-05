@@ -81,6 +81,24 @@ def build_tool_agent_system_prompt() -> str:
   "path": "目录路径",
   "max_depth": 3
 }
+4. run_shell_command
+作用：在 Docker 沙箱中执行安全命令，用于运行测试或只读检查
+参数：
+{
+  "command": "pytest -q",
+  "workdir": "sample_project",
+  "timeout": 20
+}
+
+5. run_pytest
+作用：在 Docker 沙箱中运行 pytest 测试
+参数：
+{
+  "workdir": "sample_project",
+  "timeout": 30
+}
+
+
 
 重要规则：
 1. 不要输出 JSON 以外的解释文字。

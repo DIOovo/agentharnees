@@ -76,7 +76,7 @@ def get_project_tree(args: dict[str,Any]) -> dict[str,Any]:
     path = args.get("path",'.')
     max_depth = int(args.get("max_depth",3))
     target_path = safe_resolve_path(path)
-    if not path.exists():
+    if not target_path.exists():
         return {
             "success": False,
             "error":"路径不存在"
